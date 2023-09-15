@@ -1,0 +1,32 @@
+ion-toolbar {
+  --background: #6400a0;
+  --color: white;
+  --min-height: 10vh;
+}
+
+div>span {
+  @apply text-4xl
+}
+
+ion-radio {
+  span{
+    @apply lg:text-3xl;
+  }
+  --border-radius: 4px;
+  --inner-border-radius: 4px;
+    
+  --color: #ddd;
+  --color-checked: #6400a0;
+}
+
+ion-radio.ios::part(container) {
+  width: 20px;
+  height: 20px;
+
+  border: 2px solid #ddd;
+  border-radius: 4px;
+}
+
+.radio-checked.ios::part(container) {
+  border-color: #6400a0;
+}
