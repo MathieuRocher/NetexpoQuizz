@@ -1,9 +1,9 @@
 <ion-header class="bg-[#6400a0]" [translucent]="true">
   <ion-toolbar>
     <ion-title>
-      <span class="flex justify-between   items-center flex-wrap lg:text-[3rem] md:text-base">
-        <span>ESICM Congress 2022 Quiz on Clinical accessoires</span>
-        <img src="../../assets/icon/logo.svg" class="text-base inline w-[200px] lg:w-[250px]" />
+      <span class="flex justify-between items-center flex-wrap lg:text-[3rem] md:text-base">
+        <span>ESICM 2023 Clinical Accessories Quiz</span>
+        <img src="assets/icon/logo.svg" class="text-base inline w-[200px] lg:w-[250px]" />
       </span>
     </ion-title>
   </ion-toolbar>
@@ -13,119 +13,70 @@
   <!-- étape 1 To win a gift, please try to answer to these 3 questions correctly on our Clinical Accessories : -->
   <div class="flex items-center flex-col-reverse h-full">
 
-    <ng-container *ngIf="step===1">
+    <ng-container *ngIf="step<4">
       <!-- container -->
-      <div class="w-full flex-1 flex flex-col mt-14 items-center   ">
+      <div class=" w-full flex-1 flex flex-col bg-[#D4D4D4]">
+        <!-- illustration -->
+        <img src="{{quiz[step].image}}">
+        <!-- previous button -->
+        <ion-icon *ngIf="step>0" [style.color]='"#6400A0"' name="arrow-back-outline" class="p-2 text-[32px]"
+          (click)="previous()"></ion-icon>
         <!-- question -->
-        <span class="overflow-hidden  px-16 text-center">To win a gift, please try to answer to these 3
-          questions correctly on our Clinical Accessories :
-        </span>
-        <div class="flex-1 flex justify-center items-center">
-          <ion-button (click)="fnext()">Start</ion-button>
+        <div class="flex flex-col items-center flex-1">
+          <!-- <span class="overflow-hidden mt-8 px-16 text-center">{{quiz[step].question}}</span> -->
+          <span class="overflow-hidden mt-2 px-16 text-center" [innerHTML]="quiz[step].question"></span>
+          <ion-label class="text-[#8d8d8d] m-1 overflow-hidden text-lg text-center">{{quiz[step].comment}}</ion-label>
+
+          <!-- <span class="overflow-hidden m-4 px-16 text-center">{{quiz[step].comment}}</span> -->
+          <div class="flex-1 flex flex-col justify-center gap-2 items-center">
+            <ion-radio-group class="flex flex-col gap-2" (ionChange)="selectAnswer($event)"
+              [value]="quiz[step].userAnswer">
+              <!-- <ion-radio [value]=i (ionFocus)="selectAnswer($event)"><span>{{item}}</span></ion-radio> -->
+              <!-- <ion-radio [value]=i>{{item}}</ion-radio> -->
+              <ion-item *ngFor="let item of quiz[step].answers; let i = index" class="rounded-full bg-[#e4e4e4]">
+                <!-- <ion-radio aria-label="Option Label"></ion-radio> -->
+                <!-- <ion-label>{{item}}</ion-label> -->
+                <ion-radio labelPlacement="end" justify="start" [value]=i>{{item}}</ion-radio>
+              </ion-item>
+            </ion-radio-group>
+            <ion-label *ngIf="warning" class="text-[#F37F63] overflow-hidden m-2 p-2 px-8 text-lg text-center"
+              [innerHTML]="warning"></ion-label>
+            <ion-button class="m-1" mode="ios" shape="round" (click)="next()">{{ quiz[step].answers.length ===0 ?
+              'Start' : 'Next'}}</ion-button>
+          </div>
         </div>
       </div>
-
     </ng-container>
 
+    <ng-container *ngIf="step>=4">
 
-    <ng-container *ngIf="step===2">
-      <!-- container -->
-      <div class=" w-full flex-1 flex flex-col  ">
-        <ion-icon name="arrow-back-outline" class="p-8 text-[24px]" (click)="fprev()"></ion-icon>
-
-        <!-- question -->
-        <div class="flex flex-col   items-center flex-1">
-          <span class="overflow-hidden  px-16 text-center">Which one is a GE proprietary SpO2 technology?
-            (Select the right answer)
-          </span>
-        <div class="flex-1 flex flex-col justify-center gap-9 items-center">
-
-          <ion-radio-group class="flex flex-col gap-4" [value]="rep[1].rep">
-            <ion-radio value="A" (ionFocus)="SelectRep($event)"><span>a. TruSignal TS-AF</span></ion-radio>
-            <ion-radio value="B" (ionFocus)="SelectRep($event)"><span>b. Nellcor MAXN</span></ion-radio>
-            <ion-radio value="C" (ionFocus)="SelectRep($event)"><span>c. Massimo Rainbow 4003 RD-Set</span></ion-radio>
-          </ion-radio-group>
-          <ion-button (click)="fnext()">next</ion-button>
+      <div class=" w-full flex-1 flex flex-col bg-[#D4D4D4]">
+        <!-- illustration -->
+        <!-- previous button -->
+        <ion-icon [style.color]='"#6400A0"' name="arrow-back-outline" class="p-4 text-[32px]"
+          (click)="previous()"></ion-icon>
+        <div class="flex flex-col items-center flex-1">
+          <img *ngIf="winner" class="w-[200px] h-[200px]" src="assets/illustration/well-done.png">
+          <!-- // Incorrect answer / Congratulations! -->
+          <ion-label [class]="winner ? 'text-[#19BB7C]' : 'text-[#F37F63]'"
+            class=" overflow-hidden m-2 px-16 text-2xl text-center">{{warning}}</ion-label>
+          <!-- // question if needed -->
+          <ion-label *ngIf="questionWrong!==''" class="overflow-hidden text-xl text-center" [innerHTML]="questionWrong"></ion-label>
+          <ion-label [class]="winner ? 'text-[#19BB7C]' : 'text-[#F37F63]'"
+            class="overflow-hidden text-xl text-center">{{message}}</ion-label>
+          <!-- <span class="overflow-hidden px-16 text-center" [innerHTML]="answerRight"></span> -->
+          <ion-label *ngIf="answerRight!==''" class="overflow-hidden text-2xl text-center" [innerHTML]="answerRight"></ion-label>
+          <br>
+          <!-- <span class="overflow-hidden px-16 text-center text-[#8d8d8d] text-xs">Keep up to date on our solutions: scan your badge now!</span> -->
+          <ion-label class="overflow-hidden px-16 text-center text-[#8d8d8d] text-lg">Keep up to date on our solutions:
+            scan your badge now (use barcode scanner) !</ion-label>
+            <ion-label  *ngIf="badgeId || badgeId.length>0" class="mb-4">{{badgeId}}</ion-label>
+            <ion-label *ngIf="!badgeId || badgeId.length<1" class="mb-4">Scan a badge...</ion-label>
+            <ion-button class="mb-4" mode="ios" shape="round"
+            (click)="redirectToFasteLeads(badgeId)">fasteLeads</ion-button>
+          <ion-button class="mb-4" mode="ios" shape="round" (click)="restartQuiz()">restart quiz</ion-button>
         </div>
       </div>
-    </div>
-
     </ng-container>
-
-
-
-    <ng-container *ngIf="step===3">
-      <!-- container -->
-      <div class=" w-full flex-1 flex flex-col  ">
-        <ion-icon name="arrow-back-outline" class="p-8 text-[24px]" (click)="fprev()"></ion-icon>
-
-        <!-- question -->
-        <div class="flex flex-col justify-center gap-9 items-center flex-1">
-          <span class="overflow-hidden  px-16 text-center">Do you know if GE NIBP Cuff can be used with other
-            monitors ?
-          </span>
-          <ion-radio-group class="flex flex-col gap-4" [value]="rep[2].rep">
-            <ion-radio value="A" (ionFocus)="SelectRep($event)"><span>a. Yes</span></ion-radio>
-            <ion-radio value="B" (ionFocus)="SelectRep($event)"><span>b. No</span></ion-radio>
-          </ion-radio-group>
-          <ion-button (click)="fnext()">next</ion-button>
-        </div>
-      </div>
-
-    </ng-container>
-
-
-
-    <ng-container *ngIf="step===4">
-
-      <!-- container -->
-      <div class=" w-full flex-1 flex flex-col  ">
-        <ion-icon name="arrow-back-outline" class="p-8 text-[24px]" (click)="fprev()"></ion-icon>
-
-        <!-- question -->
-        <div class="flex flex-col justify-center gap-9 items-center flex-1">
-          <span class="overflow-hidden  px-16 text-center">NMT is used for : (Select the right answer)
-          </span>
-          <ion-radio-group class="flex flex-col gap-4" [value]="rep[3].rep">
-            <ion-radio value="A" (ionFocus)="SelectRep($event)"><span>a. Patient response to surgical stimuli and analgesic
-              medications</span></ion-radio>
-            <ion-radio value="B" (ionFocus)="SelectRep($event)"><span>b. Depth of anaesthesia monitoring</span></ion-radio>
-            <ion-radio value="C" (ionFocus)="SelectRep($event)"><span>c. Neuromuscular blockage monitoring</span></ion-radio>
-          </ion-radio-group>
-          <ion-button (click)="fnext()">next</ion-button>
-        </div>
-      </div>
-
-
-
-    </ng-container>
-
-
-    <ng-container *ngIf="step===5">
-
-      <!-- container -->
-      <div class="w-full flex-1 flex flex-col ">
-        <ion-icon name="arrow-back-outline" class="p-8 text-[24px]" (click)="fprev()"></ion-icon>
-
-        <!-- question -->
-        <div class="flex flex-col justify-center gap-9 items-center flex-1">
-          <span class="overflow-hidden  px-16 text-center">Thanks ! 
-          </span>
-          <span class="overflow-hidden  px-16 text-center">Go on fasteLeads :
-          </span>
-          <ion-button (click)="gotofasteleads()">fasteLeads</ion-button>
-
-        </div>
-      </div>
-
-
-
-    </ng-container>
-
-    <div class="flex-grow self-stretch bg-no-repeat bg-cover" [ngStyle]="{'background-image': 'url(' + imgsrc + ')'}">
-    </div>
-    <!-- <img class="object-cover flex-grow self-stretch" [src]="imgsrc" alt="gelogo"> -->
-
-
   </div>
 </ion-content>
