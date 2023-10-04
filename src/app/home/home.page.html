@@ -17,12 +17,14 @@
       <!-- container -->
       <div class=" w-full flex-1 flex flex-col bg-[#D4D4D4]">
         <!-- illustration -->
-        <img src="{{quiz[step].image}}">
+        <div class="flex-grow self-stretch bg-no-repeat bg-cover" [ngStyle]="{'background-image': 'url(' + quiz[step].image + ')'}">
+        </div>
+        <!-- <img src="{{quiz[step].image}}"> -->
         <!-- previous button -->
-        <ion-icon *ngIf="step>0" [style.color]='"#6400A0"' name="arrow-back-outline" class="p-2 text-[32px]"
-          (click)="previous()"></ion-icon>
         <!-- question -->
         <div class="flex flex-col items-center flex-1">
+          <ion-icon *ngIf="step>0" [style.color]='"#6400A0"' name="arrow-back-outline" class="absolute left-0 p-2 text-[32px]"
+            (click)="previous()"></ion-icon>
           <!-- <span class="overflow-hidden mt-8 px-16 text-center">{{quiz[step].question}}</span> -->
           <span class="overflow-hidden mt-2 px-16 text-center" [innerHTML]="quiz[step].question"></span>
           <ion-label class="text-[#8d8d8d] m-1 overflow-hidden text-lg text-center">{{quiz[step].comment}}</ion-label>

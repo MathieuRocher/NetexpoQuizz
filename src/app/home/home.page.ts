@@ -45,7 +45,7 @@ export class HomePage {
       userAnswer: undefined
     },
     {
-      image: "assets/illustration/question3.jpg",
+      image: window.innerWidth>1366?"assets/illustration/question3.jpg":'assets/illustration/question3-tablette.jpg',
       question: "<b>NMT</b> is used for:",
       comment: "Select the right answer",
       answers: ["Patient response to surgical stimuli and analgesic medications", "Depth of anaesthesia monitoring", "Neuromuscular blockage monitoring"],
