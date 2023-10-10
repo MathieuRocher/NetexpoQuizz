@@ -165,7 +165,7 @@ export class HomePage {
     console.log(" REDIRECT : ", badgeId, " from ", window.location);
     let redirectUrl = (!window.location.href.startsWith("http://localhost") ? "https://f.nxp.lk" : "http://localhost:8100");
     let quizUrl = (!window.location.href.startsWith("http://localhost") ? "quiz" : "local");
-    redirectUrl += "/lead/" + badgeId + "?source=" + quizUrl;
+    redirectUrl += "/lead/" + badgeId + "?source=" + quizUrl+"&mode=simple";
     console.log(" REDIRECT > ", redirectUrl);
     window.location.href = redirectUrl;
     } else {
