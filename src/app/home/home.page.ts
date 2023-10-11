@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { AlertController, ToastController } from '@ionic/angular';
 
 interface QuizQuestion {
   image: string;
@@ -45,7 +46,7 @@ export class HomePage {
       userAnswer: undefined
     },
     {
-      image: window.innerWidth>1366?"assets/illustration/question3.jpg":'assets/illustration/question3-tablette.jpg',
+      image: window.innerWidth > 1366 ? "assets/illustration/question3.jpg" : 'assets/illustration/question3-tablette.jpg',
       question: "<b>NMT</b> is used for:",
       comment: "Select the right answer",
       answers: ["Patient response to surgical stimuli and analgesic medications", "Depth of anaesthesia monitoring", "Neuromuscular blockage monitoring"],
@@ -61,7 +62,8 @@ export class HomePage {
   winner: boolean = false;
   badgeId = "";
 
-  constructor() { }
+  constructor(private alertCtrl: AlertController,
+    private toastController: ToastController) { }
 
   async next() {
     if (this.quiz[this.step].userAnswer === undefined && this.quiz[this.step].answers.length > 0) {
@@ -76,13 +78,14 @@ export class HomePage {
       console.log(" NEXT : ", this.step, " ON ", this.quiz.length);
       if (this.step === this.quiz.length) {
         this.winner = this.completeQuiz();
+        this.quizReport();
         window.addEventListener('keydown', this.pressHandler, false);
       }
     }
   }
 
   pressHandler = (e: { code: string; key: string | any[]; }) => {
-    console.log(" PRESS Code=>" + e.code + " Key=>" + e.key + " buffer [" + this.badgeId + "]");
+    // console.log(" PRESS Code=>" + e.code + " Key=>" + e.key + " buffer [" + this.badgeId + "]");
     if (e.code == 'Enter' || e.code == 'NumpadEnter' || e.key == 'Enter') {
       // console.log(" VALID Buffer ", this.inputBuffer);
       if (this.badgeId.length > 0) {
@@ -97,7 +100,7 @@ export class HomePage {
         this.badgeId = "";
         console.log(" CLEAR buffer (BackSpace) [" + this.badgeId + "]");
       } else if (e.key == 'Shift' || e.key == 'Control' || e.key == 'Alt' || e.key == 'AltGraph' || e.key == 'Meta') {
-        console.log(" Special KEY detected " + e.key + " buffer [" + this.badgeId + "]");
+        // console.log(" Special KEY detected " + e.key + " buffer [" + this.badgeId + "]");
       } else {
         if (e.key.length == 1) {
           // console.log(" Standard KEY detected " + e.key);
@@ -114,8 +117,8 @@ export class HomePage {
     let winQuiz = true;
     this.warning = "Congratulations!";
     this.message = "All yours answers are correct.";
-    this.answerRight="";
-    this.questionWrong="";
+    this.answerRight = "";
+    this.questionWrong = "";
 
     for (const q of this.quiz) {
       if (q.answers.length > 0) { // c'est une question avec réponse 
@@ -136,6 +139,41 @@ export class HomePage {
     }
     console.log(" WIN : ", winQuiz);
     return winQuiz;
+  }
+
+  async quizReport() {
+    const url = "https://fasteleads.nxp.lk/ws/quiz/quizreport.php";
+
+    let rep: string[] = [];
+    rep.push(this.winner ? "WIN" : "LOSE");
+    this.quiz.forEach((q, i) => {
+      if (q.answers.length > 0) {
+        console.log(" REPORT ", i, " : ", q.answers[q.userAnswer!]);
+        rep.push(q.answers[q.userAnswer!]);
+      }
+    });
+    // let body = JSON.stringify(rep);
+    console.log('BODY =>', JSON.stringify(rep));
+    let options = {
+      method: 'POST',
+      body: JSON.stringify(rep)
+    };
+    try {
+      fetch(url, options)
+        .then(async (response) => {
+          if (response.ok) {
+            let result = await response.json();
+            console.log("report result json =>", result);
+          } else {
+            console.error('report error :', response.status, "msg=", response.statusText);
+          }
+          console.log("report complete (then)!");
+        });
+    } catch (error: any) {
+      console.log("report ERROR", error);
+    } finally {
+      console.log("report complete!");
+    }
   }
 
   ionViewWillLeave() {
@@ -160,16 +198,28 @@ export class HomePage {
       console.log(" PREVIOUS ON STEP : ", this.step, " !!!!");
     }
   }
-  redirectToFasteLeads(badgeId: string) {
+  async redirectToFasteLeads(badgeId: string) {
     if (badgeId && badgeId.length > 0) {
-    console.log(" REDIRECT : ", badgeId, " from ", window.location);
-    let redirectUrl = (!window.location.href.startsWith("http://localhost") ? "https://f.nxp.lk" : "http://localhost:8100");
-    let quizUrl = (!window.location.href.startsWith("http://localhost") ? "quiz" : "local");
-    redirectUrl += "/lead/" + badgeId + "?source=" + quizUrl+"&mode=simple";
-    console.log(" REDIRECT > ", redirectUrl);
-    window.location.href = redirectUrl;
+      console.log(" REDIRECT : ", badgeId, " from ", window.location);
+      let redirectUrl = (!window.location.href.startsWith("http://localhost") ? "https://f.nxp.lk" : "http://localhost:8100");
+      let quizUrl = (!window.location.href.startsWith("http://localhost") ? "quiz" : "local");
+      redirectUrl += "/lead/" + badgeId + "?source=" + quizUrl + (localStorage.getItem("mode") == "simple" ? "&mode=simple" : "");
+      console.log(" REDIRECT > ", redirectUrl);
+      window.location.href = redirectUrl;
     } else {
       console.log(" NO badgeId ");
+      const toast = await this.toastController.create({
+        // vous devez choisir une valeur pour tartanpion
+        message: "Scan a badge: use barcode scanner",
+        // icon: "warning",
+        color: 'warning',
+        cssClass: 'toast-warning',
+        //       cssClass: 'customToastClass',
+        // buttons: toastButtons,
+        duration: 5000,
+        position: 'middle',
+      });
+      toast.present();
     }
   }
 
@@ -178,11 +228,30 @@ export class HomePage {
     for (const q of this.quiz) { q.userAnswer = undefined; }
     this.warning = "";
     this.message = "";
-    this.answerRight="";
-    this.questionWrong="";
+    this.answerRight = "";
+    this.questionWrong = "";
     this.step = 0;
-    this.badgeId="";
+    this.badgeId = "";
   }
 
+  async switchMode() {
+    console.log(" switch Mode ");
+    let buttons = [
+      { text: "Single page", role: 'simple', handler: () => { console.log(" Alert SIMPLE") } },
+      { text: "Full lead", role: 'full', handler: () => { console.log(" Alert FULL") } }
+    ]
 
+    const alert = await this.alertCtrl.create({
+      header: "Change mode",
+      // subHeader: "Select mode to take leads",
+      // cssClass: 'fl-custom-alert',
+      message: "Select fasteLeads mode to take lead",
+      buttons: buttons
+    });
+    await alert.present();
+    const { role } = await alert.onDidDismiss();
+    console.log('onDidDismiss resolved with role', role);
+    localStorage.setItem("mode", role!);
+    // return (role === 'confirm' ? true : false);
+  }
 }
